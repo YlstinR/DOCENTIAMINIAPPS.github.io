@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Perfil - DOCENTE IA</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Telegram WebApps API -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="app" class="app-container">
+      
+      <!-- Premium Status Bar -->
+      <div class="status-bar">
+        <span>Docente IA v9.0</span>
+        <div class="status-indicator">
+          <div class="dot"></div>
+          <span id="sync-status">Sincronizado</span>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- VIEW: PROFILE (TMA DEFAULT)                -->
+      <!-- ========================================== -->
+      <div id="profile-view" style="display: none;">
+        <header class="header">
+          <div class="header-icon-wrapper">
+            <div class="header-icon">🎓</div>
+          </div>
+          <h1 id="dynamic-greeting">Buen día, Colega</h1>
+          <p class="subtitle">Personaliza tu perfil pedagógico para una asistencia de IA más precisa y contextualizada.</p>
+        </header>
+
+        <form id="profile-form" class="form-section">
+          
+          <!-- SECTION 1: Personal Data -->
+          <h2 class="section-title">Datos Personales</h2>
+          <div class="glass">
+            <div class="form-group">
+              <label for="nombre">👤 Nombre Completo</label>
+              <input type="text" id="nombre" name="nombre" placeholder="Ej. Juan Pérez" autocomplete="name" required />
+            </div>
+          </div>
+
+          <!-- SECTION 2: Professional Profile -->
+          <h2 class="section-title">Perfil Profesional</h2>
+          
+          <div class="glass double-group">
+            <div class="form-group">
+              <label for="institucion">🏢 Institución Educativa</label>
+              <input type="text" id="institucion" name="institucion" placeholder="Ej. I.E. 001 San Juan" autocomplete="off" required />
+            </div>
+            
+            <div class="form-group">
+              <label for="ugel">🏛️ UGEL</label>
+              <input type="text" id="ugel" name="ugel" placeholder="Ej. UGEL 03" autocomplete="off" required />
+            </div>
+          </div>
+
+          <div class="glass double-group">
+            <div class="form-group">
+              <label for="modalidad">📋 Modalidad</label>
+              <select id="modalidad" name="modalidad" required>
+                <option value="" disabled selected>Selecciona...</option>
+                <option value="EBR">EBR (Básica Regular)</option>
+                <option value="EBA">EBA (Básica Alternativa)</option>
+                <option value="EBE">EBE (Básica Especial)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="nivel">📚 Nivel Educativo</label>
+              <select id="nivel" name="nivel" required>
+                <option value="" disabled selected>Selecciona...</option>
+                <option value="Inicial">Inicial</option>
+                <option value="Primaria">Primaria</option>
+                <option value="Secundaria">Secundaria</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="glass">
+            <div class="form-group">
+              <label for="area">🎯 Área Curricular</label>
+              <input type="text" id="area" name="area" placeholder="Ej. Comunicación, Matemática..." autocomplete="off" required />
+            </div>
+          </div>
+
+          <!-- SECTION 3: Geographic Data -->
+          <h2 class="section-title">Ubicación Geográfica</h2>
+          
+          <div class="glass double-group">
+            <div class="form-group">
+              <label for="region">🌎 Región / Depto.</label>
+              <input type="text" id="region" name="region" placeholder="Ej. Lima, Cusco..." autocomplete="address-level1" required />
+            </div>
+            
+            <div class="form-group">
+              <label for="provincia">📍 Provincia</label>
+              <input type="text" id="provincia" name="provincia" placeholder="Ej. Lima, Urubamba..." autocomplete="address-level2" required />
+            </div>
+          </div>
+
+          <div class="glass double-group">
+            <div class="form-group">
+              <label for="distrito">🏙️ Distrito</label>
+              <input type="text" id="distrito" name="distrito" placeholder="Ej. Miraflores, Machu Picchu..." autocomplete="address-level3" required />
+            </div>
+
+            <div class="form-group">
+              <label for="lugar_exacto">📌 Lugar Exacto (Ref.)</label>
+              <input type="text" id="lugar_exacto" name="lugar_exacto" placeholder="Ej. Caserío San Miguel, CP..." autocomplete="off" />
+            </div>
+          </div>
+
+        </form>
+      </div>
+      <!-- END PROFILE VIEW -->
+
+      <!-- ========================================== -->
+      <!-- VIEW: LOGIN (STARTAPP=LOGIN)               -->
+      <!-- ========================================== -->
+      <div id="login-view" style="display: none;">
+        <header class="header">
+          <div class="header-icon-wrapper">
+            <div class="header-icon">🔐</div>
+          </div>
+          <h1>Portal de Acceso</h1>
+          <p class="subtitle">Ingresa tus credenciales maestras para continuar con DOCENTE IA.</p>
+        </header>
+
+        <form id="login-form" class="form-section">
+          <div class="glass">
+            <div class="form-group">
+              <label for="login-username">Usuario o Correo</label>
+              <input type="text" id="login-username" name="username" placeholder="Tu usuario o correo electrónico" required />
+            </div>
+          </div>
+          
+          <div class="glass">
+            <div class="form-group">
+              <label for="login-password">Contraseña</label>
+              <input type="password" id="login-password" name="password" placeholder="Tu contraseña segura" required />
+            </div>
+          </div>
+          
+          <div class="toggle-auth-mode">
+            <p>¿No tienes una cuenta? <span id="btn-show-register" style="color: var(--link-color); cursor: pointer; font-weight: 600;">Regístrate aquí</span></p>
+          </div>
+        </form>
+
+        <form id="register-form" class="form-section" style="display: none;">
+          <div class="glass">
+            <div class="form-group">
+              <label for="reg-username">Nuevo Usuario</label>
+              <input type="text" id="reg-username" name="username" placeholder="Elige un nombre de usuario" required />
+            </div>
+          </div>
+
+          <div class="glass">
+            <div class="form-group">
+              <label for="reg-email">Correo Electrónico</label>
+              <input type="email" id="reg-email" name="email" placeholder="tucorreo@ejemplo.com" required />
+            </div>
+          </div>
+          
+          <div class="glass">
+            <div class="form-group">
+              <label for="reg-password">Contraseña</label>
+              <input type="password" id="reg-password" name="password" placeholder="Crea una contraseña segura" required />
+            </div>
+          </div>
+          
+          <div class="toggle-auth-mode">
+            <p>¿Ya tienes una cuenta? <span id="btn-show-login" style="color: var(--link-color); cursor: pointer; font-weight: 600;">Inicia sesión</span></p>
+          </div>
+        </form>
+      </div>
+      <!-- END LOGIN VIEW -->
+
+    <!-- VISTA 3: CONSTRUCTOR DE RÚBRICAS (Rubric Builder) -->
+    <div id="rubric-view" style="display: none;">
+        <div class="header-section">
+            <h1 class="shimmer-text">Constructor de Rúbricas</h1>
+            <p>Define criterios y niveles para que la IA genere tu matriz.</p>
+        </div>
+
+        <div class="glass-card">
+            <div class="input-group">
+                <label for="rubric-topic">Tema / Competencia</label>
+                <input type="text" id="rubric-topic" placeholder="Ej: Redacción de ensayos instructivos">
+            </div>
+
+            <div class="rubric-matrix-container">
+                <table id="rubric-table">
+                    <thead>
+                        <tr id="levels-header">
+                            <th>Criterio</th>
+                            <th>Inicio</th>
+                            <th>Proceso</th>
+                            <th>Esperado</th>
+                            <th>Destacado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rubric-body">
+                        <!-- Filas dinámicas aquí -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rubric-controls">
+                <button type="button" id="btn-add-criterion" class="secondary-btn">➕ Añadir Criterio</button>
+            </div>
+            
+            <div id="rubric-status" class="status-msg" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- VISTA 4: HUB DE PLANIFICACIÓN (Planning Hub) -->
+    <div id="planning-view" style="display: none;">
+        <div class="header-section">
+            <h1 class="shimmer-text">Centro de Planificación</h1>
+            <p>Monitorea y crea tus documentos pedagógicos del año.</p>
+        </div>
+
+        <div class="planning-dashboard">
+            <!-- Card: Plan Anual -->
+            <div class="glass-card planning-card">
+                <div class="card-header">
+                    <span class="card-icon">📅</span>
+                    <h3>Plan Anual</h3>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: 0%" id="progress-anual"></div>
+                </div>
+                <p class="status-text" id="status-anual">No iniciado</p>
+                <button class="secondary-btn btn-plan" data-type="anual">Gestionar</button>
+            </div>
+
+            <!-- Card: Unidades -->
+            <div class="glass-card planning-card">
+                <div class="card-header">
+                    <span class="card-icon">📂</span>
+                    <h3>Unidades</h3>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: 0%" id="progress-unidades"></div>
+                </div>
+                <p class="status-text" id="status-unidades">0 Unidades generadas</p>
+                <button class="secondary-btn btn-plan" data-type="unidad">Gestionar</button>
+            </div>
+
+            <!-- Card: Sesiones -->
+            <div class="glass-card planning-card">
+                <div class="card-header">
+                    <span class="card-icon">📚</span>
+                    <h3>Sesiones</h3>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: 0%" id="progress-sesiones"></div>
+                </div>
+                <p class="status-text" id="status-sesiones">0 Sesiones hoy</p>
+                <button class="secondary-btn btn-plan" data-type="sesion">Gestionar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA 5: GENERADOR DE UNIDADES (Unit Generator) -->
+    <div id="unit-view" style="display: none;">
+        <div class="header-section">
+            <h1 class="shimmer-text">Generador de Unidades</h1>
+            <p>Define la situación significativa y los propósitos de aprendizaje.</p>
+        </div>
+
+        <form id="unit-form" class="glass-card">
+            <div class="input-group">
+                <label>Título de la Unidad</label>
+                <div class="glass-input-wrapper">
+                    <input type="text" id="unit-title" placeholder="Ej: Fortalecemos nuestra identidad..." required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Situación Significativa</label>
+                <div class="glass-input-wrapper">
+                    <textarea id="unit-situation" placeholder="Describe el contexto, el reto y el producto final..." required style="height: 120px;"></textarea>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="input-group">
+                    <label>Grado</label>
+                    <div class="glass-input-wrapper">
+                        <select id="unit-grade" required>
+                            <option value="">Selecciona...</option>
+                            <option value="1">1ero</option>
+                            <option value="2">2do</option>
+                            <option value="3">3ero</option>
+                            <option value="4">4to</option>
+                            <option value="5">5to</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Duración (Semanas)</label>
+                    <div class="glass-input-wrapper">
+                        <input type="number" id="unit-duration" min="1" max="10" value="4" required>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- VISTA 6: GENERADOR DE SESIONES (Session Generator) -->
+    <div id="session-view" style="display: none;">
+        <div class="header-section">
+            <h1 class="shimmer-text">Generador de Sesiones</h1>
+            <p>Diseña tu sesión de aprendizaje con los momentos pedagógicos.</p>
+        </div>
+
+        <form id="session-form" class="glass-card">
+            <div class="input-group">
+                <label>Tema de la Sesión</label>
+                <div class="glass-input-wrapper">
+                    <input type="text" id="session-topic" placeholder="Ej: La importancia del agua..." required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Propósito de Aprendizaje</label>
+                <div class="glass-input-wrapper">
+                    <textarea id="session-purpose" placeholder="¿Qué aprenderán los estudiantes hoy?" required style="height: 80px;"></textarea>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="input-group">
+                    <label>Duración (Minutos)</label>
+                    <div class="glass-input-wrapper">
+                        <select id="session-duration" required>
+                            <option value="45">45 min</option>
+                            <option value="90" selected>90 min</option>
+                            <option value="135">135 min</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Grado</label>
+                    <div class="glass-input-wrapper">
+                        <input type="text" id="session-grade" placeholder="Ej: 3ero B" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Materiales y Recursos</label>
+                <div class="glass-input-wrapper">
+                    <input type="text" id="session-resources" placeholder="Ej: Papelotes, plumones, laptop...">
+                </div>
+            </div>
+        </form>
+    </div>
+
+    </div>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

@@ -36,6 +36,8 @@ if (twa) {
 setDynamicGreeting();
 
 // --- DOM ELEMENTS ---
+const profileView = document.getElementById("profile-view");
+const loginView = document.getElementById("login-view");
 const rubricView = document.getElementById("rubric-view");
 const planningView = document.getElementById("planning-view");
 const unitView = document.getElementById("unit-view");
@@ -274,7 +276,7 @@ async function fetchPlanningStatus() {
     try {
         const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             ? `http://localhost:8000/api/tma/planning/status`
-            : `https://tu-dominio.com/api/tma/planning/status`; 
+            : `https://docente-ia.onrender.com/api/tma/planning/status`; 
 
         const res = await fetch(apiUrl, { headers: { 'Authorization': `tma ${twa?.initData || ""}` } });
         if (res.ok) {
@@ -300,7 +302,7 @@ document.querySelectorAll(".btn-plan").forEach(btn => {
 async function submitDataToBackend(payload, endpoint) {
     twa?.MainButton.showProgress();
     try {
-        const baseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:8000' : 'https://tu-dominio.com';
+        const baseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:8000' : 'https://docente-ia.onrender.com';
         const response = await fetch(`${baseUrl}${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `tma ${payload.initData}` },

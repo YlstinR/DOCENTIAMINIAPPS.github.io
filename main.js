@@ -11,9 +11,7 @@ function setDynamicGreeting() {
   const el = document.getElementById('dynamic-greeting');
   if (!el) return;
   const h = new Date().getHours();
-  el.textContent = h >= 19 || h < 5 ? "Buenas noches, Colega"
-                 : h >= 12           ? "Buenas tardes, Colega"
-                 :                     "Buen día, Colega";
+  el.textContent = "Gestión Curricular"; // Fixed title for professional consistency
 }
 
 if (twa) {
@@ -30,6 +28,39 @@ if (twa) {
 }
 
 setDynamicGreeting();
+
+// ── ICON SYSTEM ──────────────────────────────────────────────────────────────
+
+const ICON_MAP = {
+  school:     "M22 10v6M2 10l10-5 10 5-10 5zM12 12v6M6 12v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-5",
+  book:       "M4 19.5z M4 4.5h16 M4 2v20 M20 2v20",
+  folder:     "M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z",
+  clipboard:  "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2 M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z",
+  calendar:   "M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z M16 2v4 M8 2v4 M3 10h18",
+  users:      "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75",
+  brain:      "M9.5 2A5 5 0 0 1 12 7a5 5 0 0 1 2.5-5 M12 7v14 M12 12H7 M12 12h5 M12 7H7 M12 7h5", // Simple brain paths
+  user:       "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+  lock:       "M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z M7 11V7a5 5 0 0 1 10 0v4",
+  archive:    "M21 8v13H3V8 M1 3h22v5H1z M10 12h4"
+};
+
+function injectIcons() {
+  document.querySelectorAll('.professional-icon').forEach(el => {
+    const iconKey = el.dataset.icon;
+    const path = ICON_MAP[iconKey];
+    if (path) {
+      el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path.split(' ').map(p => p.startsWith('M') ? `<path d="${p}"/>` : `<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="${p.split(',')[2]}"/>`).join('')}</svg>`;
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', injectIcons);
+// Re-inject on showView to ensure dynamic elements have icons
+const originalShowView = showView;
+showView = function(viewName) {
+  originalShowView(viewName);
+  setTimeout(injectIcons, 200);
+};
 
 // ── UX HELPERS ──────────────────────────────────────────────────────────────
 
@@ -101,17 +132,17 @@ const startParam = twa?.initDataUnsafe?.start_param
   || '';
 
 const VIEW_CONFIG = {
-  dashboard:    { form: null,           mainBtn: null,                  status: "Conectado" },
-  perfil:       { form: forms.profile,  mainBtn: "GUARDAR PERFIL",      status: "Mi Perfil" },
-  login:        { form: forms.login,    mainBtn: "INICIAR SESIÓN",      status: "Portal de Acceso" },
-  register:     { form: forms.register, mainBtn: "CREAR CUENTA",        status: "Portal de Acceso" },
-  rubrica:      { form: null,           mainBtn: "GENERAR RÚBRICA",     status: "Constructor de Rúbricas" },
-  planificacion:{ form: null,           mainBtn: null,                  status: "Hub de Planificación" },
-  materiales:   { form: null,           mainBtn: null,                  status: "Mis Materiales" },
-  unidad:       { form: forms.unit,     mainBtn: "GENERAR UNIDAD",      status: "Generador de Unidades" },
-  sesion:       { form: forms.session,  mainBtn: "GENERAR SESIÓN",      status: "Generador de Sesiones" },
-  convivencia:  { form: forms.convivencia, mainBtn: "CONSULTAR",        status: "Protocolo de Convivencia" },
-  metodologia:  { form: forms.metodologia, mainBtn: "GENERAR PROYECTO", status: "Metodologías Activas" },
+  dashboard:    { form: null,           mainBtn: null,                  status: "Portal Pedagógico" },
+  perfil:       { form: forms.profile,  mainBtn: "ACTUALIZAR IDENTIDAD",      status: "Identidad Profesional" },
+  login:        { form: forms.login,    mainBtn: "AUTENTICAR",      status: "Portal de Acceso" },
+  register:     { form: forms.register, mainBtn: "SOLICITAR ACCESO",        status: "Portal de Acceso" },
+  rubrica:      { form: null,           mainBtn: "DISEÑAR INSTRUMENTO",     status: "Evaluación por Competencias" },
+  planificacion:{ form: null,           mainBtn: null,                  status: "Programación Curricular" },
+  materiales:   { form: null,           mainBtn: null,                  status: "Repositorio Personal" },
+  unidad:       { form: forms.unit,     mainBtn: "CONSTRUIR UNIDAD",      status: "Diseño de Unidad Didáctica" },
+  sesion:       { form: forms.session,  mainBtn: "PLANIFICAR SESIÓN",      status: "Planificación de Sesión" },
+  convivencia:  { form: forms.convivencia, mainBtn: "CONSULTAR PROTOCOLO",  status: "Bienestar y Convivencia" },
+  metodologia:  { form: forms.metodologia, mainBtn: "DISEÑAR PROYECTO", status: "Innovación Pedagógica" },
 };
 
 function updateMainButton(label) {
@@ -169,6 +200,7 @@ function showView(viewName) {
   updateMainButton(config.mainBtn);
 
   // View-specific initialization
+  if (viewName === "perfil")       fetchUserProfile();
   if (viewName === "rubrica")      initRubricBuilder();
   if (viewName === "planificacion") fetchPlanningStatus();
   if (viewName === "materiales")   fetchMaterials();
@@ -372,6 +404,42 @@ async function handleRubricSubmission() {
   }, "/api/tma/rubrics/generate");
 }
 
+// ── PROFILE LOADING ─────────────────────────────────────────────────────────
+
+async function fetchUserProfile() {
+  try {
+    const baseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:8000'
+      : 'https://docente-ia.onrender.com';
+
+    const res = await fetch(`${baseUrl}/api/tma/profile`, {
+      headers: { 'Authorization': `tma ${twa?.initData || ""}` }
+    });
+
+    if (res.ok) {
+      const { data } = await res.json();
+      if (data && forms.profile) {
+        const f = forms.profile;
+        const fields = [
+          'nombre', 'institucion', 'ugel', 'modalidad', 
+          'nivel', 'area', 'region', 'provincia', 
+          'distrito', 'lugar_exacto'
+        ];
+        
+        fields.forEach(field => {
+          if (data[field] && f[field]) {
+            f[field].value = data[field];
+          }
+        });
+        
+        checkFormValidity();
+      }
+    }
+  } catch (e) {
+    console.error("Error fetching profile:", e);
+  }
+}
+
 // ── PLANNING HUB ────────────────────────────────────────────────────────────
 
 async function fetchPlanningStatus() {
@@ -527,8 +595,26 @@ async function submitDataToBackend(payload, endpoint) {
     } else {
       const result = await response.json().catch(() => ({}));
       twa?.HapticFeedback.notificationOccurred('error');
-      const errorMsg = result.message || result.detail || "Hubo un error al procesar tu solicitud.";
-      twa?.showAlert(`⚠️ ${errorMsg}`);
+      
+      let errorMsg = "Hubo un error al procesar tu solicitud.";
+      
+      if (result.detail) {
+        if (Array.isArray(result.detail)) {
+          // Flatten Pydantic validation errors
+          errorMsg = result.detail.map(err => {
+            const field = err.loc && err.loc.length > 1 ? err.loc[err.loc.length - 1] : 'campo';
+            return `• ${field}: ${err.msg}`;
+          }).join('\n');
+        } else if (typeof result.detail === 'string') {
+          errorMsg = result.detail;
+        } else {
+          errorMsg = JSON.stringify(result.detail);
+        }
+      } else if (result.message) {
+        errorMsg = result.message;
+      }
+      
+      twa?.showAlert(`⚠️ Error de Validación:\n${errorMsg}`);
     }
   } catch (error) {
     loader.hide();
@@ -538,8 +624,8 @@ async function submitDataToBackend(payload, endpoint) {
     if (error.name === 'AbortError') {
       twa?.showAlert("⏱️ El servidor tarda demasiado en responder. El proceso continuará en segundo plano, por favor revisa tu Telegram en unos minutos.");
     } else {
-      console.error("Error al sincronizar con el backend:", error);
-      twa?.showAlert("🚫 No se pudo conectar con el servidor. Verifica tu internet o intenta más tarde.");
+      console.error(`[Red/CORS] Error crítico conectando con el backend (${endpoint}):`, error);
+      twa?.showAlert("🚫 Error de red. No se pudo comunicar con el servidor, puede ser por bloqueo de seguridad o conexión. Verifica tu internet.");
     }
   }
 }

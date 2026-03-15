@@ -85,6 +85,12 @@
             <span class="dash-desc">Innovación pedagógica y proyectos ABP</span>
           </div>
 
+          <div class="dash-card" data-accent="amber" data-view="gestion" id="dash-gestion">
+            <div class="dash-icon amber"><span class="professional-icon" data-icon="building"></span></div>
+            <span class="dash-label">Gestión Institucional</span>
+            <span class="dash-desc">Instrumentos de Gestión: PEI, PCI, PAT y RI</span>
+          </div>
+
           <div class="dash-card full-width" data-accent="sky" data-view="perfil" id="dash-perfil">
             <div style="display:flex; align-items:center; gap:0.6rem;">
               <div class="dash-icon sky"><span class="professional-icon" data-icon="user"></span></div>
@@ -435,6 +441,69 @@
             </div>
             <button type="submit" class="primary-btn">Consultar Protocolo</button>
         </form>
+    </div>
+
+    <!-- VISTA: GESTIÓN INSTITUCIONAL (II.GG.) -->
+    <div id="gestion-view" class="view-container" style="display: none;">
+        <header class="header">
+          <div class="header-icon-wrapper">
+            <span class="professional-icon" data-icon="building"></span>
+          </div>
+          <h1>Gestión Institucional</h1>
+          <p class="subtitle">Instrumentos de Gestión (II.GG.) que regulan la vida institucional de su escuela bajo la RM N° 501-2025.</p>
+        </header>
+
+        <!-- Diagrama de Cascada Visual -->
+        <div class="glass-card" style="text-align:center; padding:1rem;">
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.5rem;">Modelo de Planificación en Cascada</p>
+            <div style="display:flex; align-items:center; justify-content:center; gap:0.3rem; flex-wrap:wrap; font-size:0.8rem; font-weight:600;">
+                <span style="background:var(--accent-amber); color:#000; padding:0.3rem 0.6rem; border-radius:8px;">PEI/PCI</span>
+                <span style="color:var(--text-muted);">→</span>
+                <span style="background:var(--accent-rose); color:#fff; padding:0.3rem 0.6rem; border-radius:8px;">Plan Anual</span>
+                <span style="color:var(--text-muted);">→</span>
+                <span style="background:var(--accent-teal); color:#fff; padding:0.3rem 0.6rem; border-radius:8px;">Unidad</span>
+                <span style="color:var(--text-muted);">→</span>
+                <span style="background:var(--accent-indigo); color:#fff; padding:0.3rem 0.6rem; border-radius:8px;">Sesión</span>
+            </div>
+        </div>
+
+        <div class="planning-dashboard" style="margin-top:1rem;">
+            <div class="glass-card planning-card">
+                <div class="card-header">
+                    <span class="card-icon">📗</span>
+                    <h3>PCI</h3>
+                </div>
+                <p style="font-size:0.8rem; color:var(--text-muted);">Proyecto Curricular Institucional: Diversificación curricular y propuesta pedagógica.</p>
+                <button class="secondary-btn btn-gestion" data-type="crear_pci">Elaborar PCI</button>
+            </div>
+
+            <div class="glass-card planning-card">
+                <div class="card-header">
+                    <span class="card-icon">📘</span>
+                    <h3>PEI</h3>
+                </div>
+                <p style="font-size:0.8rem; color:var(--text-muted);">Proyecto Educativo Institucional: Identidad, diagnóstico y objetivos estratégicos.</p>
+                <button class="secondary-btn btn-gestion" data-type="crear_pei">Elaborar PEI</button>
+            </div>
+
+            <div class="glass-card planning-card">
+                <div class="card-header">
+                    <span class="card-icon">📙</span>
+                    <h3>PAT</h3>
+                </div>
+                <p style="font-size:0.8rem; color:var(--text-muted);">Plan Anual de Trabajo: Actividades, metas y cronograma institucional.</p>
+                <button class="secondary-btn btn-gestion" data-type="crear_pat">Elaborar PAT</button>
+            </div>
+
+            <div class="glass-card planning-card">
+                <div class="card-header">
+                    <span class="card-icon">📕</span>
+                    <h3>RI</h3>
+                </div>
+                <p style="font-size:0.8rem; color:var(--text-muted);">Reglamento Interno: Normas de convivencia y organización escolar.</p>
+                <button class="secondary-btn btn-gestion" data-type="crear_ri">Elaborar RI</button>
+            </div>
+        </div>
     </div>
 
     <!-- VISTA: METODOLOGÍAS ACTIVAS -->

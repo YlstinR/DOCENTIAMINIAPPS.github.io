@@ -38,10 +38,11 @@ const ICON_MAP = {
   clipboard:  "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2 M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z",
   calendar:   "M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z M16 2v4 M8 2v4 M3 10h18",
   users:      "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75",
-  brain:      "M9.5 2A5 5 0 0 1 12 7a5 5 0 0 1 2.5-5 M12 7v14 M12 12H7 M12 12h5 M12 7H7 M12 7h5", // Simple brain paths
+  brain:      "M9.5 2A5 5 0 0 1 12 7a5 5 0 0 1 2.5-5 M12 7v14 M12 12H7 M12 12h5 M12 7H7 M12 7h5",
   user:       "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
   lock:       "M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z M7 11V7a5 5 0 0 1 10 0v4",
-  archive:    "M21 8v13H3V8 M1 3h22v5H1z M10 12h4"
+  archive:    "M21 8v13H3V8 M1 3h22v5H1z M10 12h4",
+  building:   "M3 21h18 M5 21V7l8-4v18 M19 21V11l-6-4 M9 9v.01 M9 12v.01 M9 15v.01 M9 18v.01"
 };
 
 function injectIcons() {
@@ -98,6 +99,7 @@ const views = {
   materials: document.getElementById("materials-view"),
   convivencia: document.getElementById("convivencia-view"),
   metodologia: document.getElementById("metodologia-view"),
+  gestion: document.getElementById("gestion-view"),
 };
 
 const forms = {
@@ -143,6 +145,7 @@ const VIEW_CONFIG = {
   sesion:       { form: forms.session,  mainBtn: "PLANIFICAR SESIÓN",      status: "Planificación de Sesión" },
   convivencia:  { form: forms.convivencia, mainBtn: "CONSULTAR PROTOCOLO",  status: "Bienestar y Convivencia" },
   metodologia:  { form: forms.metodologia, mainBtn: "DISEÑAR PROYECTO", status: "Innovación Pedagógica" },
+  gestion:      { form: null,           mainBtn: null,                  status: "Gestión Institucional" },
 };
 
 function updateMainButton(label) {
@@ -168,6 +171,7 @@ function showView(viewName) {
     materiales:    "materials",
     convivencia:   "convivencia",
     metodologia:   "metodologia",
+    gestion:       "gestion",
   };
 
   const nextViewKey = viewMap[viewName] || "dashboard";
@@ -478,6 +482,63 @@ document.querySelectorAll(".btn-plan").forEach(btn => {
         showView("planificacion");
         twa.BackButton.hide();
       });
+    }
+  };
+});
+
+// ── GESTIÓN INSTITUCIONAL BUTTONS ──────────────────────────────────────────
+
+document.querySelectorAll(".btn-gestion").forEach(btn => {
+  btn.onclick = async () => {
+    const gestionType = btn.dataset.type;
+    const GESTION_LABELS = {
+      crear_pci: "Proyecto Curricular Institucional (PCI)",
+      crear_pei: "Proyecto Educativo Institucional (PEI)",
+      crear_pat: "Plan Anual de Trabajo (PAT)",
+      crear_ri:  "Reglamento Interno (RI)",
+    };
+    const label = GESTION_LABELS[gestionType] || "Instrumento de Gestión";
+
+    twa?.HapticFeedback.impactOccurred("medium");
+
+    if (twa) {
+      twa.showPopup({
+        title: `Generar ${label}`,
+        message: `Se generará el ${label} basado en su perfil institucional. Este proceso puede tomar unos segundos.`,
+        buttons: [
+          { id: "generate", type: "default", text: "Generar" },
+          { type: "cancel" }
+        ]
+      }, async (id) => {
+        if (id === "generate") {
+          loader.show(`Generando ${label}...`);
+          try {
+            const res = await fetch(`${API_BASE}/api/tma/gestion/generate`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                initData: twa.initData,
+                type: gestionType,
+                text: `Generar ${label} para mi institución educativa`
+              })
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+              twa.showAlert(`¡${label} generado con éxito! Revisa tus materiales.`);
+              showView("materiales");
+            } else {
+              twa.showAlert(`Error: ${data.detail || "No se pudo generar el documento"}`);
+            }
+          } catch (e) {
+            console.error("Gestion generate error:", e);
+            twa.showAlert("Error de conexión al generar el documento.");
+          } finally {
+            loader.hide();
+          }
+        }
+      });
+    } else {
+      alert(`[TEST] Generando: ${label} (tipo: ${gestionType})`);
     }
   };
 });

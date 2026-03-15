@@ -38,6 +38,12 @@
   --warning: #d97706;
   --error: #dc2626;
 
+  /* Accent Colors (for cascade diagram and institutional management) */
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+  --accent-teal: #14b8a6;
+  --accent-indigo: #6366f1;
+
   /* Spacing & Radius */
   --radius-sm: 10px;
   --radius-md: 16px;
@@ -329,6 +335,8 @@ body::after {
 .dash-icon.purple .professional-icon { background-color: #7c3aed; }
 .dash-icon.green  { background: rgba(5, 150, 105, 0.08); }
 .dash-icon.green .professional-icon { background-color: #059669; }
+.dash-icon.amber  { background: rgba(245, 158, 11, 0.08); }
+.dash-icon.amber .professional-icon { background-color: #f59e0b; }
 
 .dash-label {
   font-size: 0.95rem;

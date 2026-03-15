@@ -474,7 +474,11 @@
                     <h3>PCI</h3>
                 </div>
                 <p style="font-size:0.8rem; color:var(--text-muted);">Proyecto Curricular Institucional: Diversificación curricular y propuesta pedagógica.</p>
-                <button class="secondary-btn btn-gestion" data-type="crear_pci">Elaborar PCI</button>
+                <div class="gestion-actions">
+                    <button class="secondary-btn btn-gestion-wizard" data-type="pci">Asistente</button>
+                    <button class="minimal-btn btn-upload-trigger" data-type="pci">📁 Subir</button>
+                    <input type="file" class="hidden-file-input" data-type="pci" style="display:none;" accept=".pdf,.doc,.docx,.txt">
+                </div>
             </div>
 
             <div class="glass-card planning-card">
@@ -483,7 +487,11 @@
                     <h3>PEI</h3>
                 </div>
                 <p style="font-size:0.8rem; color:var(--text-muted);">Proyecto Educativo Institucional: Identidad, diagnóstico y objetivos estratégicos.</p>
-                <button class="secondary-btn btn-gestion" data-type="crear_pei">Elaborar PEI</button>
+                <div class="gestion-actions">
+                    <button class="secondary-btn btn-gestion-wizard" data-type="pei">Asistente</button>
+                    <button class="minimal-btn btn-upload-trigger" data-type="pei">📁 Subir</button>
+                    <input type="file" class="hidden-file-input" data-type="pei" style="display:none;" accept=".pdf,.doc,.docx,.txt">
+                </div>
             </div>
 
             <div class="glass-card planning-card">
@@ -492,7 +500,11 @@
                     <h3>PAT</h3>
                 </div>
                 <p style="font-size:0.8rem; color:var(--text-muted);">Plan Anual de Trabajo: Actividades, metas y cronograma institucional.</p>
-                <button class="secondary-btn btn-gestion" data-type="crear_pat">Elaborar PAT</button>
+                <div class="gestion-actions">
+                    <button class="secondary-btn btn-gestion-wizard" data-type="pat">Asistente</button>
+                    <button class="minimal-btn btn-upload-trigger" data-type="pat">📁 Subir</button>
+                    <input type="file" class="hidden-file-input" data-type="pat" style="display:none;" accept=".pdf,.doc,.docx,.txt">
+                </div>
             </div>
 
             <div class="glass-card planning-card">
@@ -501,8 +513,44 @@
                     <h3>RI</h3>
                 </div>
                 <p style="font-size:0.8rem; color:var(--text-muted);">Reglamento Interno: Normas de convivencia y organización escolar.</p>
-                <button class="secondary-btn btn-gestion" data-type="crear_ri">Elaborar RI</button>
+                <div class="gestion-actions">
+                    <button class="secondary-btn btn-gestion-wizard" data-type="ri">Asistente</button>
+                    <button class="minimal-btn btn-upload-trigger" data-type="ri">📁 Subir</button>
+                    <input type="file" class="hidden-file-input" data-type="ri" style="display:none;" accept=".pdf,.doc,.docx,.txt">
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- VISTA: ASISTENTE DE GESTIÓN (WIZARD) -->
+    <div id="gestion-wizard-view" class="view-container" style="display: none;">
+        <header class="header">
+          <div class="header-icon-wrapper">
+            <span class="professional-icon" data-icon="building"></span>
+          </div>
+          <h1 id="wizard-title">Asistente de Gestión</h1>
+          <p class="subtitle" id="wizard-subtitle">Construcción colaborativa de instrumentos de gestión institucional.</p>
+        </header>
+
+        <div class="glass-card wizard-card">
+            <div class="wizard-progress">
+                <div class="wizard-step-indicator active" id="step-1">1</div>
+                <div class="wizard-line"></div>
+                <div class="wizard-step-indicator" id="step-2">2</div>
+                <div class="wizard-line"></div>
+                <div class="wizard-step-indicator" id="step-3">3</div>
+            </div>
+
+            <div id="wizard-content" class="wizard-content-area">
+                <h2 id="wizard-question-title" class="section-title">Iniciando...</h2>
+                <p id="wizard-question-desc" class="wizard-desc">Estamos configurando el asistente para su documento.</p>
+                
+                <div id="wizard-inputs" class="wizard-inputs-container">
+                    <!-- Dinamically injected -->
+                </div>
+            </div>
+            
+            <div id="wizard-feedback" class="status-msg" style="display: none;"></div>
         </div>
     </div>
 

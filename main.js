@@ -100,6 +100,7 @@ const views = {
   convivencia: document.getElementById("convivencia-view"),
   metodologia: document.getElementById("metodologia-view"),
   gestion: document.getElementById("gestion-view"),
+  gestion_wizard: document.getElementById("gestion-wizard-view"),
 };
 
 const forms = {
@@ -146,6 +147,7 @@ const VIEW_CONFIG = {
   convivencia:  { form: forms.convivencia, mainBtn: "CONSULTAR PROTOCOLO",  status: "Bienestar y Convivencia" },
   metodologia:  { form: forms.metodologia, mainBtn: "DISEÑAR PROYECTO", status: "Innovación Pedagógica" },
   gestion:      { form: null,           mainBtn: null,                  status: "Gestión Institucional" },
+  gestion_wizard: { form: null,         mainBtn: "CONTINUAR",           status: "Asistente de Gestión" },
 };
 
 function updateMainButton(label) {
@@ -172,6 +174,7 @@ function showView(viewName) {
     convivencia:   "convivencia",
     metodologia:   "metodologia",
     gestion:       "gestion",
+    gestion_wizard: "gestion_wizard",
   };
 
   const nextViewKey = viewMap[viewName] || "dashboard";
@@ -488,59 +491,177 @@ document.querySelectorAll(".btn-plan").forEach(btn => {
 
 // ── GESTIÓN INSTITUCIONAL BUTTONS ──────────────────────────────────────────
 
-document.querySelectorAll(".btn-gestion").forEach(btn => {
-  btn.onclick = async () => {
-    const gestionType = btn.dataset.type;
-    const GESTION_LABELS = {
-      crear_pci: "Proyecto Curricular Institucional (PCI)",
-      crear_pei: "Proyecto Educativo Institucional (PEI)",
-      crear_pat: "Plan Anual de Trabajo (PAT)",
-      crear_ri:  "Reglamento Interno (RI)",
-    };
-    const label = GESTION_LABELS[gestionType] || "Instrumento de Gestión";
+// ── GESTIÓN INSTITUCIONAL: ASISTENTE Y CARGA ───────────────────────────────
 
-    twa?.HapticFeedback.impactOccurred("medium");
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:8000'
+    : 'https://docente-ia.onrender.com';
 
-    if (twa) {
-      twa.showPopup({
-        title: `Generar ${label}`,
-        message: `Se generará el ${label} basado en su perfil institucional. Este proceso puede tomar unos segundos.`,
-        buttons: [
-          { id: "generate", type: "default", text: "Generar" },
-          { type: "cancel" }
-        ]
-      }, async (id) => {
-        if (id === "generate") {
-          loader.show(`Generando ${label}...`);
-          try {
-            const res = await fetch(`${API_BASE}/api/tma/gestion/generate`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                initData: twa.initData,
-                type: gestionType,
-                text: `Generar ${label} para mi institución educativa`
-              })
-            });
-            const data = await res.json();
-            if (data.status === "success") {
-              twa.showAlert(`¡${label} generado con éxito! Revisa tus materiales.`);
-              showView("materiales");
-            } else {
-              twa.showAlert(`Error: ${data.detail || "No se pudo generar el documento"}`);
-            }
-          } catch (e) {
-            console.error("Gestion generate error:", e);
-            twa.showAlert("Error de conexión al generar el documento.");
-          } finally {
-            loader.hide();
-          }
-        }
+// 1. Manejo de Carga de Archivos
+document.querySelectorAll(".btn-upload-trigger").forEach(btn => {
+  btn.onclick = () => {
+    const input = btn.parentElement.querySelector(".hidden-file-input");
+    input.click();
+    twa?.HapticFeedback.impactOccurred("light");
+  };
+});
+
+document.querySelectorAll(".hidden-file-input").forEach(input => {
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const type = input.dataset.type;
+
+    loader.show(`Analizando ${file.name}...`);
+    
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/tma/gestion/upload`, {
+        method: "POST",
+        headers: { 
+          "Authorization": `tma ${twa?.initData || ""}`,
+          "type": type 
+        },
+        body: formData
       });
-    } else {
-      alert(`[TEST] Generando: ${label} (tipo: ${gestionType})`);
+      
+      const data = await res.json();
+      if (res.ok) {
+        twa?.showPopup({
+          title: "¡Documento Absorbido!",
+          message: `La IA ha extraído la información relevante de tu ${type.toUpperCase()}. Ahora tu planificación estará mejor contextualizada.`,
+          buttons: [{ type: "ok" }]
+        });
+      } else {
+        twa?.showAlert(`Error: ${data.detail || "No se pudo procesar el archivo"}`);
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      twa?.showAlert("Error de red al subir el documento.");
+    } finally {
+      loader.hide();
+      input.value = ""; // Reset
     }
   };
+});
+
+// 2. Manejo de Wizard
+let wizardState = {
+  type: null,
+  step: 1,
+  data: {}
+};
+
+document.querySelectorAll(".btn-gestion-wizard").forEach(btn => {
+  btn.onclick = () => {
+    wizardState = { type: btn.dataset.type, step: 1, data: {} };
+    twa?.HapticFeedback.impactOccurred("medium");
+    showView("gestion_wizard");
+    startWizard();
+  };
+});
+
+async function startWizard() {
+  const title = document.getElementById("wizard-title");
+  const subtitle = document.getElementById("wizard-subtitle");
+  
+  title.innerText = `Asistente ${wizardState.type.toUpperCase()}`;
+  subtitle.innerText = `Paso 1: Iniciando diagnóstico colaborativo.`;
+  
+  // Render de primera pregunta
+  renderWizardStep({
+    question: "¿Cuál es el objetivo principal de este instrumento?",
+    desc: "Definiremos el propósito central para alinear el resto del documento.",
+    inputs: [
+      { id: "propósito", type: "textarea", placeholder: "Ej. Fortalecer el clima escolar y la participación..." }
+    ]
+  });
+}
+
+function renderWizardStep(config) {
+  const qTitle = document.getElementById("wizard-question-title");
+  const qDesc = document.getElementById("wizard-question-desc");
+  const container = document.getElementById("wizard-inputs");
+  
+  qTitle.innerText = config.question;
+  qDesc.innerText = config.desc;
+  container.innerHTML = "";
+  
+  config.inputs.forEach(inp => {
+    const group = document.createElement("div");
+    group.className = "form-group glass";
+    
+    if (inp.type === "textarea") {
+      group.innerHTML = `<textarea id="${inp.id}" placeholder="${inp.placeholder}" style="height:100px;"></textarea>`;
+    } else {
+      group.innerHTML = `<input type="${inp.type}" id="${inp.id}" placeholder="${inp.placeholder}">`;
+    }
+    container.appendChild(group);
+  });
+
+  // Update indicators
+  document.querySelectorAll(".wizard-step-indicator").forEach((el, idx) => {
+    el.classList.toggle("active", idx + 1 === wizardState.step);
+  });
+}
+
+async function handleWizardNext() {
+  const inputs = document.getElementById("wizard-inputs").querySelectorAll("input, textarea");
+  const stepData = {};
+  inputs.forEach(inp => stepData[inp.id] = inp.value);
+  
+  Object.assign(wizardState.data, stepData);
+  
+  loader.show("Procesando respuesta...");
+  
+  try {
+    const res = await fetch(`${API_BASE}/api/tma/gestion/wizard-next`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `tma ${twa?.initData || ""}`
+      },
+      body: JSON.stringify({
+        type: wizardState.type,
+        step: wizardState.step,
+        data: wizardState.data
+      })
+    });
+    
+    const result = await res.json();
+    loader.hide();
+    
+    if (result.status === "next") {
+      wizardState.step++;
+      renderWizardStep(result.config);
+      twa?.HapticFeedback.impactOccurred("light");
+    } else if (result.status === "completed") {
+      twa?.showPopup({
+        title: "¡Asistente Completado!",
+        message: "Excelente. He recolectado toda la información necesaria. Tu documento se está terminando de redactar y lo recibirás en breve.",
+        buttons: [{ type: "ok" }]
+      }, () => {
+        showView("dashboard");
+      });
+    }
+  } catch (err) {
+    loader.hide();
+    twa?.showAlert("Error en el flujo del asistente.");
+  }
+}
+
+// Re-vincular el onClick del MainButton para el Wizard
+const originalMainOnClick = twa?.MainButton.onClick || (() => {});
+twa?.MainButton.onClick(() => {
+  if (currentViewName === "gestion_wizard") {
+    handleWizardNext();
+  } else {
+    // Aquí llamamos a lo que ya tenía main.js o lo replicamos si fue sobreescrito
+    // pero como estamos en un módulo, es mejor centralizar.
+    // (Este fragmento asume que el handler anterior es el de las líneas 308+)
+  }
 });
 
 // ── MATERIALS HISTORY ───────────────────────────────────────────────────────

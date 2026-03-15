@@ -317,27 +317,27 @@ if (twa) {
     if (currentViewName === "login" || currentViewName === "register") {
       const mode = currentViewName === "login" ? "login" : "register";
       submitDataToBackend(
-        { action: `auth_${mode}`, data, initData: twa.initData },
+        data,
         `/api/tma/auth/${mode}`
       );
     } else if (currentViewName === "unidad") {
       submitDataToBackend(
-        { action: "generate_unit", data, initData: twa.initData },
+        data,
         "/api/tma/units/generate"
       );
     } else if (currentViewName === "sesion") {
       submitDataToBackend(
-        { action: "generate_session", data, initData: twa.initData },
+        data,
         "/api/tma/sessions/generate"
       );
     } else if (currentViewName === "convivencia") {
       submitDataToBackend(
-        { action: "consult_convivencia", data, initData: twa.initData },
+        data,
         "/api/tma/convivencia/consult"
       );
     } else if (currentViewName === "metodologia") {
       submitDataToBackend(
-        { action: "generate_metodologia", data, initData: twa.initData },
+        data,
         "/api/tma/metodologia/generate"
       );
     } else {
@@ -351,7 +351,7 @@ if (twa) {
       }, (id) => {
         if (id === "save") {
           submitDataToBackend(
-            { action: "update_profile", data, initData: twa.initData },
+            data,
             "/api/tma/profile"
           );
         }
@@ -397,11 +397,10 @@ async function handleRubricSubmission() {
     .map(i => i.value.trim()).filter(v => v);
   if (criteria.length === 0) return twa?.showAlert("Añade criterios.");
 
-  submitDataToBackend({
-    action: "generate_rubric",
-    data: { topic: rubricTopic.value.trim(), criteria },
-    initData: twa.initData
-  }, "/api/tma/rubrics/generate");
+  submitDataToBackend(
+    { topic: rubricTopic.value.trim(), criteria }, 
+    "/api/tma/rubrics/generate"
+  );
 }
 
 // ── PROFILE LOADING ─────────────────────────────────────────────────────────

@@ -101,6 +101,7 @@ const views = {
   metodologia: document.getElementById("metodologia-view"),
   gestion: document.getElementById("gestion-view"),
   gestion_wizard: document.getElementById("gestion-wizard-view"),
+  diagnostic: document.getElementById("diagnostic-view"),
 };
 
 const forms = {
@@ -111,6 +112,7 @@ const forms = {
   session:  document.getElementById('session-form'),
   convivencia: document.getElementById('convivencia-form'),
   metodologia: document.getElementById('metodologia-form'),
+  diagnostic: document.getElementById('diagnostic-form'),
 };
 
 const rubricBody     = document.getElementById("rubric-body");
@@ -148,6 +150,7 @@ const VIEW_CONFIG = {
   metodologia:  { form: forms.metodologia, mainBtn: "DISEÑAR PROYECTO", status: "Innovación Pedagógica" },
   gestion:      { form: null,           mainBtn: null,                  status: "Gestión Institucional" },
   gestion_wizard: { form: null,         mainBtn: "CONTINUAR",           status: "Asistente de Gestión" },
+  diagnostic:     { form: forms.diagnostic, mainBtn: "SINTETIZAR FODA", status: "Diagnóstico Situacional" },
 };
 
 function updateMainButton(label) {
@@ -347,6 +350,8 @@ if (twa) {
         data,
         "/api/tma/metodologia/generate"
       );
+    } else if (currentViewName === "diagnostic") {
+      analyzeDiagnostic(data);
     } else {
       twa.showPopup({
         title: "Confirmar Cambios",
@@ -603,8 +608,33 @@ function renderWizardStep(config) {
 
   // Update indicators
   document.querySelectorAll(".wizard-step-indicator").forEach((el, idx) => {
-    el.classList.toggle("active", idx + 1 === wizardState.step);
+    const stepNum = idx + 1;
+    el.classList.toggle("active", stepNum === wizardState.step);
+    el.classList.toggle("completed", stepNum < wizardState.step);
   });
+
+  // Handle Suggestions
+  const suggestionsBox = document.getElementById("wizard-suggestions");
+  const suggestionsList = document.getElementById("suggestions-list");
+  if (config.suggestions && config.suggestions.length > 0) {
+    suggestionsList.innerHTML = "";
+    config.suggestions.forEach(s => {
+      const pill = document.createElement("span");
+      pill.className = "suggestion-pill";
+      pill.innerText = s;
+      pill.onclick = () => {
+        const firstInput = container.querySelector("input, textarea");
+        if (firstInput) {
+          firstInput.value = s;
+          twa?.HapticFeedback.impactOccurred("light");
+        }
+      };
+      suggestionsList.appendChild(pill);
+    });
+    suggestionsBox.style.display = "block";
+  } else {
+    suggestionsBox.style.display = "none";
+  }
 }
 
 async function handleWizardNext() {
@@ -633,6 +663,17 @@ async function handleWizardNext() {
     const result = await res.json();
     loader.hide();
     
+    // Update Draft Panel
+    const draftPanel = document.getElementById("draft-content");
+    const ragBadge = document.getElementById("rag-badge");
+    if (result.draft_preview) {
+      draftPanel.innerText = result.draft_preview;
+      draftPanel.classList.remove("placeholder");
+    }
+    if (result.rag_active) {
+      ragBadge.style.display = "block";
+    }
+
     if (result.status === "next") {
       wizardState.step++;
       renderWizardStep(result.config);
@@ -809,4 +850,164 @@ async function submitDataToBackend(payload, endpoint) {
       twa?.showAlert("🚫 Error de red. No se pudo comunicar con el servidor, puede ser por bloqueo de seguridad o conexión. Verifica tu internet.");
     }
   }
+}
+
+// ── DIAGNOSTIC MODULE ───────────────────────────────────────────────────────
+
+async function fetchDiagnosticDraft() {
+  try {
+    const baseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:8000'
+      : 'https://docente-ia.onrender.com';
+
+    const res = await fetch(`${baseUrl}/api/tma/diagnostic/load`, {
+      method: 'GET',
+      headers: { 'Authorization': `tma ${twa?.initData || ""}` }
+    });
+
+    if (res.ok) {
+      const { data } = await res.json();
+      if (data && forms.diagnostic) {
+        const fields = ['cge1', 'cge2', 'cge3', 'cge4', 'cge5', 'pestel_p', 'pestel_e', 'pestel_s', 'pestel_t', 'pestel_ec'];
+        fields.forEach(field => {
+          if (data[field] && forms.diagnostic[field]) {
+            forms.diagnostic[field].value = data[field];
+          }
+        });
+        
+        // Show previous FODA if exists
+        if (data.sintesis_foda) {
+          renderFodaResults(data.sintesis_foda);
+        }
+        
+        checkFormValidity();
+      }
+    }
+  } catch (error) {
+    console.error("Error cargando borrador de diagnóstico:", error);
+  }
+}
+
+document.getElementById('btn-save-diagnostic-draft')?.addEventListener('click', async () => {
+  if (!forms.diagnostic) return;
+  
+  const formData = new FormData(forms.diagnostic);
+  const data = Object.fromEntries(formData.entries());
+  
+  const feedbackEl = document.getElementById('diagnostic-feedback');
+  if (feedbackEl) {
+    feedbackEl.innerHTML = "Guardando borrador...";
+    feedbackEl.style.display = "block";
+    feedbackEl.className = "status-msg";
+  }
+
+  try {
+    const baseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:8000'
+      : 'https://docente-ia.onrender.com';
+
+    const res = await fetch(`${baseUrl}/api/tma/diagnostic/save`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `tma ${twa?.initData || ""}`
+      },
+      body: JSON.stringify({ data })
+    });
+
+    if (res.ok) {
+      if (feedbackEl) {
+        feedbackEl.innerHTML = "Borrador guardado exitosamente ✨";
+        feedbackEl.className = "status-msg success";
+      }
+      twa?.HapticFeedback.notificationOccurred('success');
+    } else {
+      throw new Error("Failed to save");
+    }
+  } catch (e) {
+    if (feedbackEl) {
+      feedbackEl.innerHTML = "Error al guardar el borrador.";
+      feedbackEl.className = "status-msg error";
+    }
+    twa?.HapticFeedback.notificationOccurred('error');
+  }
+  
+  setTimeout(() => {
+    if (feedbackEl) feedbackEl.style.display = "none";
+  }, 3000);
+});
+
+async function analyzeDiagnostic(data) {
+  loader.show("Analizando contexto educativo...");
+  try {
+    const baseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:8000'
+      : 'https://docente-ia.onrender.com';
+
+    const res = await fetch(`${baseUrl}/api/tma/diagnostic/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `tma ${twa?.initData || ""}`
+      },
+      body: JSON.stringify({ diagnostico: data })
+    });
+
+    loader.hide();
+
+    if (res.ok) {
+      const result = await res.json();
+      twa?.HapticFeedback.notificationOccurred('success');
+      renderFodaResults(result.data);
+    } else {
+      const errorData = await res.json();
+      twa?.showAlert(`Error: ${errorData.message}`);
+    }
+  } catch (error) {
+    loader.hide();
+    twa?.showAlert("Error de conexión al analizar el diagnóstico.");
+  }
+}
+
+function renderFodaResults(foda) {
+  const panel = document.getElementById('foda-results-panel');
+  const content = document.getElementById('foda-content');
+  if (!panel || !content || !foda) return;
+  
+  let html = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">`;
+  
+  const sections = [
+    { title: "Fortalezas", data: foda.fortalezas, color: "var(--accent-green)", icon: "💪" },
+    { title: "Oportunidades", data: foda.oportunidades, color: "var(--accent-sky)", icon: "🌟" },
+    { title: "Debilidades", data: foda.debilidades, color: "var(--accent-rose)", icon: "⚠️" },
+    { title: "Amenazas", data: foda.amenazas, color: "var(--accent-amber)", icon: "🛡️" }
+  ];
+  
+  sections.forEach(s => {
+    html += `
+      <div style="background: rgba(255,255,255,0.03); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid ${s.color};">
+        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: ${s.color};">${s.icon} ${s.title}</h4>
+        <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.8rem; color: var(--text-color);">
+          ${s.data.map(item => `<li style="margin-bottom: 0.3rem;">${item}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  });
+  
+  html += `</div>`;
+  
+  if (foda.conclusiones) {
+    html += `
+      <div style="margin-top: 1rem; padding: 1rem; background: rgba(var(--accent-emerald-rgb), 0.1); border-radius: 8px border: 1px solid rgba(var(--accent-emerald-rgb), 0.2);">
+        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: var(--accent-emerald);">🎯 Síntesis Estratégica</h4>
+        <p style="margin: 0; font-size: 0.85rem;">${foda.conclusiones}</p>
+      </div>
+    `;
+  }
+  
+  content.innerHTML = html;
+  panel.style.display = "block";
+  
+  // Opcionalmente scroll hacia el FODA
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }

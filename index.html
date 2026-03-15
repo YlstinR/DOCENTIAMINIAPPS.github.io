@@ -91,6 +91,12 @@
             <span class="dash-desc">Instrumentos de Gestión: PEI, PCI, PAT y RI</span>
           </div>
 
+          <div class="dash-card" data-accent="emerald" data-view="diagnostic" id="dash-diagnostic">
+            <div class="dash-icon emerald"><span class="professional-icon" data-icon="search"></span></div>
+            <span class="dash-label">Diagnóstico Situacional</span>
+            <span class="dash-desc">Análisis guiado del entorno (CGE y PESTEL)</span>
+          </div>
+
           <div class="dash-card full-width" data-accent="sky" data-view="perfil" id="dash-perfil">
             <div style="display:flex; align-items:center; gap:0.6rem;">
               <div class="dash-icon sky"><span class="professional-icon" data-icon="user"></span></div>
@@ -194,6 +200,101 @@
         </form>
       </div>
       <!-- END PROFILE VIEW -->
+
+      <!-- ========================================== -->
+      <!-- VIEW: DIAGNÓSTICO SITUACIONAL (PRECISION)  -->
+      <!-- ========================================== -->
+      <div id="diagnostic-view" class="view-container" style="display: none;">
+        <header class="header">
+          <div class="header-icon-wrapper">
+            <span class="professional-icon" data-icon="search"></span>
+          </div>
+          <h1>Diagnóstico de Contexto Educativo</h1>
+          <p class="subtitle">Auditoría Guiada basada en los 5 Compromisos de Gestión Escolar y Análisis PESTEL.</p>
+        </header>
+
+        <form id="diagnostic-form" class="form-section">
+          
+          <h2 class="section-title">Compromisos de Gestión Escolar (CGE)</h2>
+          
+          <div class="glass">
+            <div class="form-group">
+              <label for="cge1">CGE 1: Progreso de Aprendizajes</label>
+              <textarea id="cge1" placeholder="Ej: Brechas en comprensión lectora en 3er grado..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="cge2">CGE 2: Acceso y Permanencia</label>
+              <textarea id="cge2" placeholder="Ej: Tasa de deserción del 5% por trabajo agrícola..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="cge3">CGE 3: Calendarización y Condiciones Operativas</label>
+              <textarea id="cge3" placeholder="Ej: Mantenimiento pendiente en pabellón B..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="cge4">CGE 4: Acompañamiento y Práctica Pedagógica</label>
+              <textarea id="cge4" placeholder="Ej: 60% de docentes en nivel satisfactorio de desempeño..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="cge5">CGE 5: Gestión de la Convivencia Escolar</label>
+              <textarea id="cge5" placeholder="Ej: 3 casos reportados en SISEVE (resueltos)..." required></textarea>
+            </div>
+          </div>
+
+          <h2 class="section-title">Análisis PESTEL</h2>
+          
+          <div class="glass double-group">
+            <div class="form-group">
+              <label for="pestel_p">Político - Legal</label>
+              <textarea id="pestel_p" placeholder="Ej: Normativa local sobre transporte escolar..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="pestel_e">Económico</label>
+              <textarea id="pestel_e" placeholder="Ej: Economía familiar basada en comercio local..." required></textarea>
+            </div>
+          </div>
+          
+          <div class="glass double-group">
+            <div class="form-group">
+              <label for="pestel_s">Socio - Cultural</label>
+              <textarea id="pestel_s" placeholder="Ej: Fuerte identidad con festividades patronales..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="pestel_t">Tecnológico</label>
+              <textarea id="pestel_t" placeholder="Ej: Conectividad limitada (solo red 3G en zona)..." required></textarea>
+            </div>
+          </div>
+          
+          <div class="glass">
+            <div class="form-group">
+              <label for="pestel_ec">Ecológico / Ambiental</label>
+              <textarea id="pestel_ec" placeholder="Ej: Riesgo de heladas entre junio y agosto..." required></textarea>
+            </div>
+          </div>
+
+          <div class="action-buttons" style="margin-top: 2rem;">
+            <button type="submit" class="primary-btn">
+              <span class="professional-icon" data-icon="sparkles" style="width:16px;height:16px;margin-right:8px;"></span>
+              Generar Síntesis FODA Inteligente
+            </button>
+            <button type="button" id="btn-save-diagnostic-draft" class="secondary-btn">Guardar Borrador</button>
+          </div>
+          <div id="diagnostic-feedback" class="status-msg" style="display: none; margin-top: 1rem;"></div>
+        </form>
+
+        <!-- Panel de Resultados (FODA) -->
+        <div id="foda-results-panel" class="glass-card" style="display: none; margin-top: 2rem; border-top: 3px solid var(--accent-emerald);">
+          <div class="card-header">
+            <span class="professional-icon" data-icon="sparkles"></span>
+            <h3>Síntesis FODA MINEDU V10.0</h3>
+          </div>
+          <p class="subtitle" style="font-size:0.85rem; margin-bottom: 1rem;">Análisis automatizado de su auditoría CGE y PESTEL.</p>
+          
+          <div id="foda-content" style="font-size: 0.9rem; line-height: 1.6;">
+              <!-- Se inyecta dinámicamente -->
+          </div>
+        </div>
+      </div>
+      <!-- END DIAGNOSTIC VIEW -->
 
       <!-- ========================================== -->
       <!-- VIEW: LOGIN                                -->
@@ -532,25 +633,44 @@
           <p class="subtitle" id="wizard-subtitle">Construcción colaborativa de instrumentos de gestión institucional.</p>
         </header>
 
-        <div class="glass-card wizard-card">
-            <div class="wizard-progress">
-                <div class="wizard-step-indicator active" id="step-1">1</div>
-                <div class="wizard-line"></div>
-                <div class="wizard-step-indicator" id="step-2">2</div>
-                <div class="wizard-line"></div>
-                <div class="wizard-step-indicator" id="step-3">3</div>
+        <div class="wizard-layout-container">
+            <div class="glass-card wizard-card">
+                <div class="wizard-progress">
+                    <div class="wizard-step-indicator active" id="step-1">1</div>
+                    <div class="wizard-line"></div>
+                    <div class="wizard-step-indicator" id="step-2">2</div>
+                    <div class="wizard-line"></div>
+                    <div class="wizard-step-indicator" id="step-3">3</div>
+                </div>
+
+                <div id="wizard-content" class="wizard-content-area">
+                    <h2 id="wizard-question-title" class="section-title">Iniciando...</h2>
+                    <p id="wizard-question-desc" class="wizard-desc">Estamos configurando el asistente para su documento.</p>
+                    
+                    <div id="wizard-inputs" class="wizard-inputs-container">
+                        <!-- Dinamically injected -->
+                    </div>
+
+                    <div id="wizard-suggestions" class="wizard-suggestions-container" style="margin-top: 1rem; display: none;">
+                        <p style="font-size: 0.72rem; color: var(--hint-color); text-transform: uppercase; margin-bottom: 0.5rem;">Sugerencias IA (Click para usar):</p>
+                        <div id="suggestions-list"></div>
+                    </div>
+                </div>
+                
+                <div id="wizard-feedback" class="status-msg" style="display: none;"></div>
             </div>
 
-            <div id="wizard-content" class="wizard-content-area">
-                <h2 id="wizard-question-title" class="section-title">Iniciando...</h2>
-                <p id="wizard-question-desc" class="wizard-desc">Estamos configurando el asistente para su documento.</p>
-                
-                <div id="wizard-inputs" class="wizard-inputs-container">
-                    <!-- Dinamically injected -->
+            <!-- Panel de Borrador Cognitivo -->
+            <div id="wizard-draft-panel" class="glass-card draft-panel">
+                <div class="draft-header">
+                    <span class="professional-icon" data-icon="edit"></span>
+                    <h3 style="margin:0;">Borrador Dinámico</h3>
+                    <div id="rag-badge" class="rag-badge" style="display:none;">Contexto RAG</div>
+                </div>
+                <div id="draft-content" class="draft-content placeholder">
+                    Responda las preguntas para ver cómo se construye su documento en tiempo real...
                 </div>
             </div>
-            
-            <div id="wizard-feedback" class="status-msg" style="display: none;"></div>
         </div>
     </div>
 

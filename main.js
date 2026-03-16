@@ -226,19 +226,19 @@ document.getElementById('profile-tipologia')?.addEventListener('change', (e) => 
   if (mode === 'unidocente') {
     // Unidocente: Todas las áreas, Todos los grados
     if (areaSelect) {
-      if (!Array.from(areaSelect.options).some(o => o.value === 'Todas las áreas')) {
-         const opt = new Option('Todas las áreas', 'Todas las áreas');
+      if (!Array.from(areaSelect.options).some(o => o.value === 'TODAS las áreas')) {
+         const opt = new Option('TODAS las áreas', 'TODAS las áreas');
          areaSelect.add(opt, 0);
       }
-      areaSelect.value = 'Todas las áreas';
+      areaSelect.value = 'TODAS las áreas';
       areaSelect.disabled = true;
     }
     if (gradoSelect) {
-      if (!Array.from(gradoSelect.options).some(o => o.value === 'Multi-grado (Todos)')) {
-         const opt = new Option('Multi-grado (Todos)', 'Multi-grado (Todos)');
+      if (!Array.from(gradoSelect.options).some(o => o.value === 'TODOS los grados')) {
+         const opt = new Option('TODOS los grados', 'TODOS los grados');
          gradoSelect.add(opt, 0);
       }
-      gradoSelect.value = 'Multi-grado (Todos)';
+      gradoSelect.value = 'TODOS los grados';
       gradoSelect.disabled = true;
     }
     if (seccionInput) {
@@ -252,8 +252,8 @@ document.getElementById('profile-tipologia')?.addEventListener('change', (e) => 
     if (seccionInput) seccionInput.readOnly = false;
     
     // Si era unidocente y cambió, limpiar los temporales si el usuario quiere
-    if (areaSelect && areaSelect.value === 'Todas las áreas') areaSelect.value = '';
-    if (gradoSelect && gradoSelect.value === 'Multi-grado (Todos)') gradoSelect.value = '';
+    if (areaSelect && areaSelect.value === 'TODAS las áreas') areaSelect.value = '';
+    if (gradoSelect && gradoSelect.value === 'TODOS los grados') gradoSelect.value = '';
   }
 });
 
@@ -527,6 +527,10 @@ async function fetchUserProfile() {
     const form = document.getElementById('profile-form');
     ['nombre','director','institucion','ugel','modalidad','nivel','area','grado','seccion','anio_lectivo','tipologia','region','provincia','distrito','lugar_exacto']
       .forEach(f => { if (data[f] && form[f]) form[f].value = data[f]; });
+    
+    // Disparar lógica de tipología (unidocente/multigrado) tras cargar
+    form['tipologia']?.dispatchEvent(new Event('change'));
+
     // Update badge
     if (data.nombre) {
       document.getElementById('profile-name').textContent = data.nombre;

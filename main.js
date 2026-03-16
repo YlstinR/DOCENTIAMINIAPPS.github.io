@@ -14,6 +14,9 @@ if (twa) {
   twa.expand();
   twa.setHeaderColor?.('bg_color');
   twa.setBackgroundColor?.('#18191B');
+  
+  // Persistencia: Verificar borradores al iniciar
+  setTimeout(() => checkWizardPersistence(), 500);
 } else {
   document.getElementById('conn-dot').style.background = '#C49A3C';
   document.getElementById('sync-status').textContent = 'Modo prueba';
@@ -678,6 +681,42 @@ document.querySelectorAll('.btn-gestion-wizard').forEach(btn => {
   });
 });
 
+async function checkWizardPersistence() {
+  if (!twa?.initData) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/tma/gestion/wizard-load`, {
+      headers: { 'Authorization': `tma ${twa.initData}` }
+    });
+    const result = await res.json();
+    if (result.status === 'success' && result.data && result.data.type) {
+      twa.showPopup({
+        title: '¡Borrador encontrado!',
+        message: `Estabas redactando un ${result.data.type.toUpperCase()}. ¿Deseas retomar el progreso?`,
+        buttons: [
+          {id: 'continue', type: 'default', text: 'Sí, continuar'},
+          {id: 'cancel', type: 'destructive', text: 'No, empezar de cero'}
+        ]
+      }, (btnId) => {
+        if (btnId === 'continue') {
+          resumeWizard(result.data);
+        }
+      });
+    }
+  } catch(e) { console.error('Error en checkWizardPersistence', e); }
+}
+
+function resumeWizard(savedState) {
+  wizardState = {
+    type: savedState.type,
+    step: savedState.step,
+    data: savedState.data
+  };
+  showView('gestion_wizard');
+  
+  // Re-solicitar la configuración del paso actual al servidor (para renderizar inputs)
+  handleWizardNext(true); 
+}
+
 function startWizard() {
   document.getElementById('wizard-title').textContent  = `Asistente ${wizardState.type}`;
   document.getElementById('wizard-label').textContent  = `Gestión — ${wizardState.type}`;
@@ -710,14 +749,18 @@ function renderWizardStep(config) {
   });
 }
 
-document.getElementById('btn-wizard-next')?.addEventListener('click', handleWizardNext);
+document.getElementById('btn-wizard-next')?.addEventListener('click', () => handleWizardNext(false));
 
-async function handleWizardNext() {
+async function handleWizardNext(isResume = false) {
   const inputs = document.getElementById('wizard-inputs').querySelectorAll('input,textarea');
   const stepData = {};
-  inputs.forEach(i => stepData[i.id] = i.value);
-  Object.assign(wizardState.data, stepData);
-  loader.show('Procesando respuesta…');
+  
+  if (!isResume) {
+    inputs.forEach(i => stepData[i.id] = i.value);
+    Object.assign(wizardState.data, stepData);
+  }
+  
+  loader.show(isResume ? 'Recuperando borrador…' : 'Procesando respuesta…');
   try {
     const res = await fetch(`${API_BASE}/api/tma/gestion/wizard-next`, {
       method: 'POST',
@@ -1029,7 +1072,122 @@ document.getElementById('btn-gen-planificacion')?.addEventListener('click', () =
 // Init planificacion when view opens
 function initPlanificacion() {
   paAutoFill();
+  fetchPlanningData(); 
   paGoTo(1);
+}
+
+async function fetchPlanningData() {
+  try {
+    const res = await fetch(`${API_BASE}/api/tma/planning/load`, {
+      headers: { 'Authorization': `tma ${twa?.initData || ''}` }
+    });
+    const result = await res.json();
+    if (result.status === 'success' && result.data) {
+      populatePlanningForm(result.data);
+    }
+  } catch (err) {
+    console.error('Error loading planning:', err);
+  }
+}
+
+function populatePlanningForm(data) {
+  if (!data) return;
+
+  // Step 1: Datos Generales
+  if (data.datos) {
+    const d = data.datos;
+    if (d.dre) document.getElementById('pa-dre').value = d.dre;
+    if (d.ugel) document.getElementById('pa-ugel').value = d.ugel;
+    if (d.ie) document.getElementById('pa-ie').value = d.ie;
+    if (d.director) document.getElementById('pa-director').value = d.director;
+    if (d.docente) document.getElementById('pa-docente').value = d.docente;
+    if (d.nivel) document.getElementById('pa-nivel').value = d.nivel;
+    if (d.grado) document.getElementById('pa-grado').value = d.grado;
+    if (d.area) document.getElementById('pa-area').value = d.area;
+    if (d.modalidad) document.getElementById('pa-modalidad').value = d.modalidad;
+    if (d.organizacion) document.getElementById('pa-organizacion').value = d.organizacion;
+    if (d.semanas) document.getElementById('pa-semanas').value = d.semanas;
+    if (d.horas_semanales) document.getElementById('pa-horas').value = d.horas_semanales;
+  }
+
+  // Step 2: Propósito
+  if (data.proposito) {
+    if (data.proposito.texto) document.getElementById('pa-proposito-anual').value = data.proposito.texto;
+    if (data.proposito.enfoque) {
+      const rad = document.querySelector(`input[name="pa_enfoque"][value="${data.proposito.enfoque}"]`);
+      if (rad) rad.checked = true;
+    }
+  }
+
+  // Situación Significativa
+  if (data.situacion_significativa) {
+    const ss = data.situacion_significativa;
+    if (ss.texto) document.getElementById('pa-situacion-sig').value = ss.texto;
+    if (ss.producto_final) document.getElementById('pa-producto-final').value = ss.producto_final;
+    if (ss.contextos) {
+      ss.contextos.forEach(c => {
+        const cb = document.querySelector(`input[name="pa_contexto_ss"][value="${c}"]`);
+        if (cb) cb.checked = true;
+      });
+    }
+  }
+
+  // Competencias y Capacidades
+  if (data.competencias) {
+    data.competencias.forEach(c => {
+      const cb = document.querySelector(`input[name="competencia"][value="${c}"]`);
+      if (cb) cb.checked = true;
+    });
+  }
+  if (data.capacidades) {
+    data.capacidades.forEach(c => {
+      const cb = document.querySelector(`input[name="cap"][value="${c}"]`);
+      if (cb) cb.checked = true;
+    });
+  }
+
+  // Unidades didácticas (Reemplazar la lista actual)
+  if (data.unidades && data.unidades.length > 0) {
+    paUnidades = data.unidades;
+    renderPAUnidades();
+  }
+
+  // Evaluación y Otros Enfoques
+  if (data.evaluacion) {
+    if (data.evaluacion.instrumentos) {
+      data.evaluacion.instrumentos.forEach(i => {
+        const cb = document.querySelector(`input[name="pa_instrumentos"][value="${i}"]`);
+        if (cb) cb.checked = true;
+      });
+    }
+    if (data.evaluacion.comunicacion_familias) {
+      data.evaluacion.comunicacion_familias.forEach(f => {
+        const cb = document.querySelector(`input[name="pa_comunicacion_familias"][value="${f}"]`);
+        if (cb) cb.checked = true;
+      });
+    }
+  }
+
+  if (data.enfoques_transversales) {
+    data.enfoques_transversales.forEach(e => {
+      const cb = document.querySelector(`input[name="pa_enfoques"][value="${e}"]`);
+      if (cb) cb.checked = true;
+    });
+  }
+
+  if (data.materiales) {
+    data.materiales.forEach(m => {
+      const cb = document.querySelector(`input[name="pa_materiales"][value="${m}"]`);
+      if (cb) cb.checked = true;
+    });
+  }
+
+  if (data.recursos_digitales) {
+    data.recursos_digitales.forEach(r => {
+      const cb = document.querySelector(`input[name="pa_digital"][value="${r}"]`);
+      if (cb) cb.checked = true;
+    });
+  }
 }
 
 
@@ -1090,9 +1248,103 @@ const DIAG_STEP_META = [
 
 let diagCurrentStep = 1;
 
+async function fetchDiagnosticData() {
+  try {
+    const res = await fetch(`${API_BASE}/api/tma/diagnostic/load`, {
+      headers: { Authorization: `tma ${twa?.initData || ''}` }
+    });
+    if (!res.ok) return;
+    const { data } = await res.json();
+    if (data && Object.keys(data).length > 0) {
+      populateDiagnosticForm(data);
+      // Actualizar tag en el dashboard
+      const tag = document.getElementById('tag-diagnostico');
+      if (tag) { tag.textContent = 'Completado'; tag.className = 'tag-badge done'; }
+    }
+  } catch(e) { console.warn('Diagnostic load failed', e); }
+}
+
+function populateDiagnosticForm(data) {
+  if (!data) return;
+
+  // 1. Inputs de Texto, Selects y Textareas por ID
+  const simpleFields = [
+    'diag-num-estudiantes', 'diag-num-mujeres', 'diag-num-varones', 
+    'diag-tipo-aula', 'diag-nee', 'diag-infraestructura',
+    'diag-fortalezas-extra', 'diag-problema-otro', 'diag-hipotesis-extra',
+    'diag-apoyo-aip', 'hyp-estrategia', 'hyp-tiempo', 'hyp-mejora', 'hyp-nivel-cambio'
+  ];
+  simpleFields.forEach(id => {
+    const el = document.getElementById(id);
+    const key = id.replace('diag-', '').replace(/-/g, '_');
+    if (el && data[key] !== undefined) {
+      el.value = data[key];
+      // Trigger live preview if it's a hypothesis field
+      if (id.startsWith('hyp-')) buildHypothesisPreview();
+      // Show "otro" container if needed
+      if (id === 'diag-problema-otro' && data[key]) {
+        const container = document.getElementById('prob-otro-container');
+        if (container) container.style.display = 'block';
+      }
+    }
+  });
+
+  // 2. Checkboxes por selector de nombre
+  const checkGroups = [
+    'tipos_nee', 'fort_actividades', 'fort_habilidades', 'dif_tareas', 
+    'dif_factores', 'areas_bajas', 'ctx_vulnerabilidad', 'ctx_servicios', 
+    'prob_evidencia', 'causas_ped', 'causas_ctx', 'compromisos'
+  ];
+  checkGroups.forEach(key => {
+    const values = data[key];
+    if (Array.isArray(values)) {
+      // Nota: algunos checkboxes no tienen atributo 'name', se buscan por contenedor
+      let inputs = [];
+      if (key === 'tipos_nee') {
+        inputs = document.querySelectorAll('#diag-step-1 input[type="checkbox"]');
+      } else if (key === 'ctx_servicios') {
+         inputs = document.querySelectorAll('input[name="ctx_servicios"]');
+      } else {
+        inputs = document.querySelectorAll(`input[name="${key}"]`);
+      }
+      
+      inputs.forEach(input => {
+        input.checked = values.includes(input.value);
+      });
+    }
+  });
+
+  // 3. Radios
+  const radioGroups = [
+    'nivel_logro', 'fort_area_fuerte', 'dif_momento', 'ctx_economia', 
+    'ctx_asistencia', 'prob_tipo'
+  ];
+  radioGroups.forEach(key => {
+    const val = data[key];
+    if (val) {
+      const radio = document.querySelector(`input[name="${key}"][value="${val}"]`);
+      if (radio) radio.checked = true;
+    }
+  });
+
+  // 4. Custom Button Groups (Selection)
+  const buttonGroups = [
+    { container: '#diag-freq-scale', val: data.dif_frecuencia },
+    { container: '#diag-acompanamiento-scale', val: data.ctx_acompanamiento },
+    { container: '.diag-pct-row', val: data.prob_porcentaje }
+  ];
+  buttonGroups.forEach(group => {
+    if (group.val) {
+      const btn = document.querySelector(`${group.container} button[data-val="${group.val}"]`);
+      if (btn) btn.click(); // Reusa la lógica de bindExclusive
+    }
+  });
+}
+
 function initDiagnostico() {
   diagCurrentStep = 1;
   renderDiagStep(1);
+  fetchDiagnosticData(); // Cargar datos del servidor
 }
 
 function renderDiagStep(step) {
@@ -1267,6 +1519,11 @@ document.getElementById('btn-save-diagnostico')?.addEventListener('click', () =>
     causas_ped:       getChecked('input[name="causas_ped"]:checked'),
     causas_ctx:       getChecked('input[name="causas_ctx"]:checked'),
     hipotesis:        buildHypothesis(),
+    hyp_estrategia:   document.getElementById('hyp-estrategia')?.value,
+    hyp_tiempo:       document.getElementById('hyp-tiempo')?.value,
+    hyp_mejora:       document.getElementById('hyp-mejora')?.value,
+    hyp_nivel_cambio: document.getElementById('hyp-nivel-cambio')?.value,
+    diag_hipotesis_extra: document.getElementById('diag-hipotesis-extra')?.value,
     compromisos:      getChecked('input[name="compromisos"]:checked'),
   };
 

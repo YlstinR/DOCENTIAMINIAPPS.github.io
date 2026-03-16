@@ -522,7 +522,7 @@ async function fetchUserProfile() {
     const { data } = await res.json();
     if (!data) return;
     const form = document.getElementById('profile-form');
-    ['nombre','director','institucion','ugel','modalidad','nivel','area','grado','seccion','anio_lectivo','region','provincia','distrito','lugar_exacto']
+    ['nombre','director','institucion','ugel','modalidad','nivel','area','grado','seccion','anio_lectivo','tipologia','region','provincia','distrito','lugar_exacto']
       .forEach(f => { if (data[f] && form[f]) form[f].value = data[f]; });
     // Update badge
     if (data.nombre) {
